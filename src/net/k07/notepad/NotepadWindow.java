@@ -47,6 +47,13 @@ public class NotepadWindow extends JFrame {
         });
         fileMenu.add(open);
 
+        JMenuItem save = new JMenuItem("Save");
+        save.addActionListener(e -> {
+            saveToFile();
+        });
+        fileMenu.add(save);
+
+
         menuBar.add(fileMenu);
         this.add(menuBar, BorderLayout.NORTH);
 
@@ -161,10 +168,10 @@ public class NotepadWindow extends JFrame {
 
         try {
             Files.write(Paths.get(openedFile.getAbsolutePath()), lines, StandardOpenOption.WRITE);
+            fileChanged = false;
         }
         catch(IOException e) {
             JOptionPane.showMessageDialog(null, "Error when writing file!", "Error", JOptionPane.ERROR_MESSAGE);
-            System.exit(0);
         }
     }
 
