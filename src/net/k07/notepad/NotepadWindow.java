@@ -10,6 +10,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -36,13 +37,13 @@ public class NotepadWindow extends JFrame {
 
         JMenuItem newItem = new JMenuItem("New");
         newItem.addActionListener(e -> {
-            //newFile();
+            newFile();
         });
         fileMenu.add(newItem);
 
         JMenuItem open = new JMenuItem("Open");
         open.addActionListener(e -> {
-            openFile();
+            openFile(pickFile());
         });
         fileMenu.add(open);
 
@@ -65,8 +66,34 @@ public class NotepadWindow extends JFrame {
         this.add(pane, BorderLayout.CENTER);
     }
 
-    public void openFile() {
-        File file = pickFile();
+    public void newFile() {
+        JFileChooser chooser = new JFileChooser();
+
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Text files", "txt");
+        chooser.setFileFilter(filter);
+        int returnVal = chooser.showDialog(null, "Create");
+        if(returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = chooser.getSelectedFile();
+            Path filePath = Paths.get(file.getAbsolutePath());
+
+            try {
+                if(Files.exists(filePath)) {
+                    JOptionPane.showMessageDialog(this, "File already exists! Use \"Open\" to open", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                else {
+                    Files.write(filePath, "".getBytes());
+                }
+            }
+            catch(IOException e) {
+                System.out.println("Couldn't create file!");
+            }
+
+            openFile(file);
+        }
+    }
+
+    public void openFile(File file) {
         if(file == null) {
             return;
         }
