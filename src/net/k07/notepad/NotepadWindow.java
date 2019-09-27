@@ -7,7 +7,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,19 +31,23 @@ public class NotepadWindow extends JFrame {
 
         JMenuBar menuBar = new JMenuBar();
         menuBar.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+        JMenu fileMenu = new JMenu("File");
+
+        JMenuItem newItem = new JMenuItem("New");
+        newItem.addActionListener(e -> {
+            //newFile();
+        });
+        fileMenu.add(newItem);
+
         JMenuItem open = new JMenuItem("Open");
         open.addActionListener(e -> {
             openFile();
         });
-        menuBar.add(open);
+        fileMenu.add(open);
 
-        JMenuItem close = new JMenuItem("Close");
-        close.addActionListener(e -> {
-            closeFile();
-        });
-        menuBar.add(close);
+        menuBar.add(fileMenu);
         this.add(menuBar, BorderLayout.NORTH);
-
 
         this.textArea = new JTextArea();
         textArea.getDocument().addDocumentListener(new DocumentListener() {
