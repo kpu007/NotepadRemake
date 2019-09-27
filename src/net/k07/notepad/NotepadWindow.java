@@ -5,7 +5,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,21 +25,26 @@ public class NotepadWindow extends JFrame {
 
     public NotepadWindow() {
         super();
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.setLayout(new BorderLayout());
         this.setTitle("Untitled - NotepadRemake");
+        this.addWindowListener(new NotepadWindowAdapter());
 
-        JButton open = new JButton();
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.setLayout(new FlowLayout(FlowLayout.LEFT));
+        JMenuItem open = new JMenuItem("Open");
         open.addActionListener(e -> {
             openFile();
         });
-        this.add(open, BorderLayout.NORTH);
+        menuBar.add(open);
 
-        JButton close = new JButton();
+        JMenuItem close = new JMenuItem("Close");
         close.addActionListener(e -> {
             closeFile();
         });
-        this.add(close, BorderLayout.SOUTH);
+        menuBar.add(close);
+        this.add(menuBar, BorderLayout.NORTH);
+
 
         this.textArea = new JTextArea();
         textArea.getDocument().addDocumentListener(new DocumentListener() {
@@ -99,16 +106,18 @@ public class NotepadWindow extends JFrame {
         return text;
     }
 
-    public void closeFile() {
+    public boolean closeFile() {
         if(fileChanged) {
-            int result = JOptionPane.showConfirmDialog(null, "Save changes to " + openedFile.getName() + "?", "Save Changes", JOptionPane.YES_NO_OPTION);
+            int result = JOptionPane.showConfirmDialog(null, "Save changes to " + openedFile.getName() + "?", "Save Changes", JOptionPane.YES_NO_CANCEL_OPTION);
 
             if(result == 0) {
                 saveToFile();
             }
+            else if(result == 2) {
+                return false;
+            }
         }
-
-        this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+        return true;
     }
 
     public void saveToFile() {
@@ -129,5 +138,15 @@ public class NotepadWindow extends JFrame {
         }
     }
 
+    class NotepadWindowAdapter extends WindowAdapter {
+        public void windowClosing(WindowEvent e) {
+            boolean keepClosing = closeFile();
+            if(!keepClosing) {
+                return;
+            }
+
+            System.exit(0);
+        }
+    }
 }
 
