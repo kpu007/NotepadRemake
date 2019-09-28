@@ -23,6 +23,9 @@ public class NotepadWindow extends JFrame {
     public File openedFile = null;
     public boolean fileChanged = false;
 
+    /**
+     * Sets up the window and all of its components + action listeners
+     */
     public NotepadWindow() {
         super();
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -73,6 +76,9 @@ public class NotepadWindow extends JFrame {
         this.add(pane, BorderLayout.CENTER);
     }
 
+    /**
+     * Brings up the dialog for creating a new file. Does not overwrite existing files
+     */
     public void newFile() {
         JFileChooser chooser = new JFileChooser();
 
@@ -100,6 +106,11 @@ public class NotepadWindow extends JFrame {
         }
     }
 
+    /**
+     * Given a file, open it. Set our window's file to it, and make it so that we are viewing its text in our text area.
+     *
+     * @param file the file to open
+     */
     public void openFile(File file) {
         if(file == null) {
             return;
@@ -112,6 +123,10 @@ public class NotepadWindow extends JFrame {
         this.fileChanged = false;
     }
 
+    /**
+     * Open a file chooser dialog and get its selected file.
+     * @return the file selected in the dialog, null if nothing was picked
+     */
     public File pickFile() {
         JFileChooser chooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Text files", "txt");
@@ -124,6 +139,13 @@ public class NotepadWindow extends JFrame {
         return null;
     }
 
+    /**
+     * Read the file contents of the file into a string.
+     * Done by using Files.readAllLines() and then manually combining them into one string using newlines.
+     *
+     * @param file the file to read from
+     * @return the string containing the file's contents
+     */
     public String getFileContents(File file) {
         String text = "";
         String pathString = file.getAbsolutePath();
@@ -143,6 +165,12 @@ public class NotepadWindow extends JFrame {
         return text;
     }
 
+    /**
+     * Method called when closing the file.
+     * Prompts the user to save the file if unsaved changes have been made.
+     *
+     * @return true if the file close is successful, false if it was cancelled by the "Cancel" button
+     */
     public boolean closeFile() {
         if(fileChanged) {
             int result = JOptionPane.showConfirmDialog(null, "Save changes to " + openedFile.getName() + "?", "Save Changes", JOptionPane.YES_NO_CANCEL_OPTION);
@@ -157,6 +185,9 @@ public class NotepadWindow extends JFrame {
         return true;
     }
 
+    /**
+     * Save the data to the file, and set our unsaved changes flag to false.
+     */
     public void saveToFile() {
         if(openedFile == null) {
             return;
@@ -175,6 +206,10 @@ public class NotepadWindow extends JFrame {
         }
     }
 
+    /**
+     * Window listener class to prompt for unsaved changes whenever the file is closing.
+     * Allows for cancellation if needed.
+     */
     class NotepadWindowAdapter extends WindowAdapter {
         public void windowClosing(WindowEvent e) {
             boolean keepClosing = closeFile();
