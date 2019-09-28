@@ -5,6 +5,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -42,7 +43,10 @@ public class NotepadWindow extends JFrame {
         newItem.addActionListener(e -> {
             newFile("");
         });
+        KeyStroke newStroke = KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK);
+        newItem.setAccelerator(newStroke);
         fileMenu.add(newItem);
+
 
         JMenuItem open = new JMenuItem("Open");
         open.addActionListener(e -> {
@@ -51,13 +55,23 @@ public class NotepadWindow extends JFrame {
                 openFile(pickFile());
             }
         });
+        KeyStroke openStroke = KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK);
+        open.setAccelerator(openStroke);
         fileMenu.add(open);
 
         JMenuItem save = new JMenuItem("Save");
         save.addActionListener(e -> {
-            saveToFile();
+            saveToFile(false);
         });
+        KeyStroke saveStroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
+        save.setAccelerator(openStroke);
         fileMenu.add(save);
+
+        JMenuItem saveAs = new JMenuItem("Save As");
+        saveAs.addActionListener(e -> {
+            saveToFile(true);
+        });
+        fileMenu.add(saveAs);
 
         JMenuItem close = new JMenuItem("Close");
         close.addActionListener(e -> {
@@ -194,11 +208,20 @@ public class NotepadWindow extends JFrame {
      * @return true if the file close is successful, false if it was cancelled by the "Cancel" button
      */
     public boolean promptToSaveFile() {
+        String fileName;
+
+        if(openedFile != null) {
+            fileName = openedFile.getName();
+        }
+        else {
+            fileName = "Untitled";
+        }
+
         if(fileChanged) {
-            int result = JOptionPane.showConfirmDialog(null, "Save changes to " + openedFile.getName() + "?", "Save Changes", JOptionPane.YES_NO_CANCEL_OPTION);
+            int result = JOptionPane.showConfirmDialog(null, "Save changes to " + fileName + "?", "Save Changes", JOptionPane.YES_NO_CANCEL_OPTION);
 
             if(result == 0) {
-                saveToFile();
+                saveToFile(false);
             }
             else if(result == 2) {
                 return false;
@@ -209,9 +232,11 @@ public class NotepadWindow extends JFrame {
 
     /**
      * Save the data to the file, and set our unsaved changes flag to false.
+     *
+     * @param saveToNewFile whether or not to save to a new file. Disregards this parameter if there is no opened file
      */
-    public void saveToFile() {
-        if(openedFile == null) {
+    public void saveToFile(boolean saveToNewFile) {
+        if(saveToNewFile || openedFile == null) {
             newFile(textArea.getText());
         }
         else {
