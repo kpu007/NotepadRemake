@@ -46,7 +46,10 @@ public class NotepadWindow extends JFrame {
 
         JMenuItem open = new JMenuItem("Open");
         open.addActionListener(e -> {
-            openFile(pickFile());
+            boolean canClose = promptToSaveFile();
+            if(canClose) {
+                openFile(pickFile());
+            }
         });
         fileMenu.add(open);
 
@@ -56,6 +59,11 @@ public class NotepadWindow extends JFrame {
         });
         fileMenu.add(save);
 
+        JMenuItem close = new JMenuItem("Close");
+        close.addActionListener(e -> {
+            this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+        });
+        fileMenu.add(close);
 
         menuBar.add(fileMenu);
         this.add(menuBar, BorderLayout.NORTH);
@@ -171,7 +179,7 @@ public class NotepadWindow extends JFrame {
      *
      * @return true if the file close is successful, false if it was cancelled by the "Cancel" button
      */
-    public boolean closeFile() {
+    public boolean promptToSaveFile() {
         if(fileChanged) {
             int result = JOptionPane.showConfirmDialog(null, "Save changes to " + openedFile.getName() + "?", "Save Changes", JOptionPane.YES_NO_CANCEL_OPTION);
 
@@ -207,17 +215,16 @@ public class NotepadWindow extends JFrame {
     }
 
     /**
-     * Window listener class to prompt for unsaved changes whenever the file is closing.
+     * Window listener class to prompt for unsaved changes whenever the file is closing before actually closing it.
      * Allows for cancellation if needed.
      */
     class NotepadWindowAdapter extends WindowAdapter {
         public void windowClosing(WindowEvent e) {
-            boolean keepClosing = closeFile();
-            if(!keepClosing) {
-                return;
+            boolean canClose = promptToSaveFile();
+            if(canClose) {
+                JFrame frame = (JFrame)e.getSource();
+                frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             }
-
-            System.exit(0);
         }
     }
 }
