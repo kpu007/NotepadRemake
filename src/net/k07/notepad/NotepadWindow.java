@@ -40,7 +40,7 @@ public class NotepadWindow extends JFrame {
 
         JMenuItem newItem = new JMenuItem("New");
         newItem.addActionListener(e -> {
-            newFile();
+            newFile("");
         });
         fileMenu.add(newItem);
 
@@ -87,31 +87,16 @@ public class NotepadWindow extends JFrame {
     /**
      * Brings up the dialog for creating a new file. Does not overwrite existing files
      */
-    public void newFile() {
-        JFileChooser chooser = new JFileChooser();
+    public void newFile(String contents) {
 
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Text files", "txt");
-        chooser.setFileFilter(filter);
-        int returnVal = chooser.showDialog(null, "Create");
-        if(returnVal == JFileChooser.APPROVE_OPTION) {
-            File file = chooser.getSelectedFile();
-            Path filePath = Paths.get(file.getAbsolutePath());
-
-            try {
-                if(Files.exists(filePath)) {
-                    JOptionPane.showMessageDialog(this, "File already exists! Use \"Open\" to open", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                else {
-                    Files.write(filePath, "".getBytes());
-                }
-            }
-            catch(IOException e) {
-                System.out.println("Couldn't create file!");
-            }
-
-            openFile(file);
+        File file = promptForNonexistentFile();
+        try {
+            Files.write(Paths.get(file.getAbsolutePath()), contents.getBytes());
         }
+        catch(IOException e) {
+            showErrorDialog("Error creating file!");
+        }
+        openFile(file);
     }
 
     /**
@@ -147,6 +132,29 @@ public class NotepadWindow extends JFrame {
         return null;
     }
 
+    public File promptForNonexistentFile() {
+        JFileChooser chooser = new JFileChooser();
+
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Text files", "txt");
+        chooser.setFileFilter(filter);
+        int result = chooser.showDialog(null, "Create");
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File file = chooser.getSelectedFile();
+            Path filePath = Paths.get(file.getAbsolutePath());
+
+            if (Files.exists(filePath)) {
+                showErrorDialog("File already exists! Use \"Open\" to open");
+                return null;
+            } else {
+                return file;
+            }
+        }
+        else {
+            return null;
+        }
+    }
+
     /**
      * Read the file contents of the file into a string.
      * Done by using Files.readAllLines() and then manually combining them into one string using newlines.
@@ -162,7 +170,7 @@ public class NotepadWindow extends JFrame {
             lines = Files.readAllLines(Paths.get(pathString));
         }
         catch(IOException e) {
-            JOptionPane.showMessageDialog(null, "Error when opening file!", "Error", JOptionPane.ERROR_MESSAGE);
+            showErrorDialog("Error opening file!");
             System.exit(0);
         }
 
@@ -198,22 +206,25 @@ public class NotepadWindow extends JFrame {
      */
     public void saveToFile() {
         if(openedFile == null) {
-            return;
+            newFile(textArea.getText());
         }
+        else {
+            ArrayList<String> lines = new ArrayList<String>();
+            lines.add(textArea.getText());
 
-        String pathString = openedFile.getAbsolutePath();
-        ArrayList<String> lines = new ArrayList<String>();
-        lines.add(textArea.getText());
-
-        try {
-            Files.write(Paths.get(openedFile.getAbsolutePath()), lines, StandardOpenOption.WRITE);
-            fileChanged = false;
-        }
-        catch(IOException e) {
-            JOptionPane.showMessageDialog(null, "Error when writing file!", "Error", JOptionPane.ERROR_MESSAGE);
+            String pathString = openedFile.getAbsolutePath();
+            try {
+                Files.write(Paths.get(pathString), lines, StandardOpenOption.WRITE);
+                fileChanged = false;
+            } catch (IOException e) {
+                showErrorDialog("Error when writing file!");
+            }
         }
     }
 
+    public void showErrorDialog(String message) {
+        JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
     /**
      * Window listener class to prompt for unsaved changes whenever the file is closing before actually closing it.
      * Allows for cancellation if needed.
