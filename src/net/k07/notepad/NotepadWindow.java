@@ -85,18 +85,18 @@ public class NotepadWindow extends JFrame {
     }
 
     /**
-     * Brings up the dialog for creating a new file. Does not overwrite existing files
+     * Creates a new file with the contents and sets the file as the opened file.
      */
     public void newFile(String contents) {
 
         File file = promptForNonexistentFile();
         try {
             Files.write(Paths.get(file.getAbsolutePath()), contents.getBytes());
+            openFile(file);
         }
         catch(IOException e) {
             showErrorDialog("Error creating file!");
         }
-        openFile(file);
     }
 
     /**
@@ -132,6 +132,12 @@ public class NotepadWindow extends JFrame {
         return null;
     }
 
+    /**
+     * Gets a file that doesn't exist. This way, the file can be created and written to without a hitch.
+     * Used because this notepad doesn't support overwriting of existing files.
+     *
+     * @return a file that doesn't exist
+     */
     public File promptForNonexistentFile() {
         JFileChooser chooser = new JFileChooser();
 
@@ -222,9 +228,14 @@ public class NotepadWindow extends JFrame {
         }
     }
 
+    /**
+     * Helper method to shorten the stuff typed when displaying an error dialog
+     * @param message the error message
+     */
     public void showErrorDialog(String message) {
         JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
+
     /**
      * Window listener class to prompt for unsaved changes whenever the file is closing before actually closing it.
      * Allows for cancellation if needed.
