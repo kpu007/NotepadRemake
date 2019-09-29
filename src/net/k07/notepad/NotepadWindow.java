@@ -64,7 +64,7 @@ public class NotepadWindow extends JFrame {
             saveToFile(false);
         });
         KeyStroke saveStroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
-        save.setAccelerator(openStroke);
+        save.setAccelerator(saveStroke);
         fileMenu.add(save);
 
         JMenuItem saveAs = new JMenuItem("Save As");
